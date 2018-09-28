@@ -14,7 +14,7 @@ Features
 Installation
 ------------
 
-This plugin is installed by default in any new Cloud9's workspaces.
+This plugin is installed by default in any new Cloud9's environments.
 
 
 .. _getting-started:
@@ -24,7 +24,7 @@ Getting started
 
 Go to `Cloud9 <https://c9.io/>`_, create an account there then:
 
-1. Create a Workspace using the Python template
+1. Create an Environment using the Python template
 2. Create a new file with a few statements and save it as "debug_me.py".
 
 You can copy / paste this snippet.

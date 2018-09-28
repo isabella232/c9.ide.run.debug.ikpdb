@@ -1,4 +1,4 @@
- /*
+/*
   * Copyright (C) 2015,  Ajax.org B.V.
   * This software is available under the Cloud9 SDK License, available from 
   * https://github.com/c9/core/blob/master/LICENSE.
@@ -10,8 +10,7 @@ var debuggedProcessPort = parseInt("{DEBUGGED_PROCESS_PORT}", 10);
 
 var debugBuffer = [];
 var browserBuffer = [];
-var browserClient, 
-    debugClient;
+var browserClient, debugClient;
 
 var MAX_RETRIES = 100;
 var RETRY_INTERVAL = 300;
@@ -26,16 +25,15 @@ function send() {
 }
 
 var server = net.createServer(function(client) {
-    if (browserClient)
-        browserClient.destroy(); // Client is probably unloaded because a new client is connecting
-    
+    if (browserClient) browserClient.destroy(); // Client is probably unloaded because a new client is connecting
+
     browserClient = client;
     debugBuffer = [];
-    
+
     browserClient.on("end", function() {
         browserClient = null;
     });
-    
+
     browserClient.on("data", function(data) {
         console.error("data = " + data);
         if (debugClient) {
@@ -44,7 +42,7 @@ var server = net.createServer(function(client) {
             debugBuffer.push(data);
         }
     });
-    
+
     if (browserBuffer.length) {
         browserBuffer.forEach(function(data) {
             browserClient.write(data);
@@ -60,25 +58,25 @@ server.listen(debuggedProcessPort + 1, "127.0.0.1", function() {
 });
 
 // Handle errors
-server.on("error", function() { process.exit(0); });
+server.on("error", function() {
+    process.exit(0);
+});
 
 function tryConnect(retries, callback) {
-    if (!retries)
-        return callback(new Error("Cannot connect to port " + debuggedProcessPort));
-        
+    if (!retries) return callback(new Error("Cannot connect to port " + debuggedProcessPort));
+
     var connection = net.connect(debuggedProcessPort, debuggedProcessHost);
-    
+
     connection.on("connect", function() {
         //console.log("netproxy connected to debugger");
         connection.removeListener("error", onError);
         callback(null, connection);
     });
-    
+
     connection.addListener("error", onError);
     function onError(e) {
-        if (e.code !== "ECONNREFUSED")
-            return callback(e);
-        
+        if (e.code !== "ECONNREFUSED") return callback(e);
+
         setTimeout(function() {
             tryConnect(retries - 1, callback);
         }, RETRY_INTERVAL);
@@ -86,12 +84,11 @@ function tryConnect(retries, callback) {
 }
 
 tryConnect(MAX_RETRIES, function(err, connection) {
-    if (err)
-        return errHandler(err);
-        
+    if (err) return errHandler(err);
+
     debugClient = connection;
     browserBuffer = [];
-    
+
     debugClient.on("data", function(data) {
         if (browserClient) {
             browserClient.write(data);
@@ -99,20 +96,20 @@ tryConnect(MAX_RETRIES, function(err, connection) {
             browserBuffer.push(data);
         }
     });
-    
+
     function errHandler(e) {
         console.log(e);
         process.exit(0);
     }
-    
+
     debugClient.on("error", errHandler);
-    
+
     debugClient.on("end", function(data) {
         server.close();
     });
-    
+
     start();
-    
+
     if (debugBuffer.length) {
         console.error("sending buffer to debugger...");
         console.error("debugBuffer  = " + debugBuffer);
@@ -123,9 +120,7 @@ tryConnect(MAX_RETRIES, function(err, connection) {
     }
 });
 
-
 var I = 0;
 function start() {
-    if (++I == 2)
-        send("ß");
+    if (++I == 2) send("ß");
 }
